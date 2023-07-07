@@ -2,18 +2,14 @@
 using ChatApp.Interface;
 using ChatApp.Model;
 using ChatApp.ParameterModels;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace ChatApp.Controller
 {
@@ -35,7 +31,7 @@ namespace ChatApp.Controller
             _dbcontext = applicationDbContext;
         }
         public static Registration registeredUser = new Registration();
-        public static Login loggedUser = new Login();    
+        //public static Login loggedUser = new Login();    
 
 
         [HttpGet]
@@ -112,28 +108,10 @@ namespace ChatApp.Controller
             //loggedUser.Password=login.Password;
 
             //_login.AddUser(loggedUser);
-
             string token = CreateToken(registeredUser);
+            //loggedUser.Token = token;
             return Ok(token);
         }
-        //private string CreateToken(Registration registration)
-        //{
-        //    List<Claim> claims = new List<Claim>
-        //    {
-        //        new Claim(ClaimTypes.Email, registration.Email),
-        //    };
-        //    var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSetting:Token").Value));
-
-        //    var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        //    var token=new JwtSecurityToken(
-        //        claims:claims,
-        //        expires:DateTime.Now.AddDays(2),
-        //        signingCredentials:credentials);
-
-        //    var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-        //    return jwt;
-        //}
         private string CreateToken(Registration user)
         {
             List<Claim> claims = new List<Claim>();

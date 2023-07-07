@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ChatApp.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class initia : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -23,7 +23,7 @@ namespace ChatApp.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Password = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Token = table.Column<string>(type: "longtext", nullable: false)
+                    Token = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
@@ -69,59 +69,56 @@ namespace ChatApp.Migrations
                 columns: table => new
                 {
                     MsgId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    LoginId = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    ReceiverId = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    ReceiverId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     MsgBody = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     TimeStamp = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    LoginId1 = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    ReceiverId1 = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
+                    registrationUserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_messages", x => x.MsgId);
                     table.ForeignKey(
-                        name: "FK_messages_logins_LoginId1",
-                        column: x => x.LoginId1,
-                        principalTable: "logins",
-                        principalColumn: "LoginId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_messages_receivers_ReceiverId1",
-                        column: x => x.ReceiverId1,
+                        name: "FK_messages_receivers_ReceiverId",
+                        column: x => x.ReceiverId,
                         principalTable: "receivers",
                         principalColumn: "ReceiverId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_messages_registrations_registrationUserId",
+                        column: x => x.registrationUserId,
+                        principalTable: "registrations",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateIndex(
-                name: "IX_messages_LoginId1",
+                name: "IX_messages_ReceiverId",
                 table: "messages",
-                column: "LoginId1");
+                column: "ReceiverId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_messages_ReceiverId1",
+                name: "IX_messages_registrationUserId",
                 table: "messages",
-                column: "ReceiverId1");
+                column: "registrationUserId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "messages");
-
-            migrationBuilder.DropTable(
-                name: "registrations");
-
-            migrationBuilder.DropTable(
                 name: "logins");
 
             migrationBuilder.DropTable(
+                name: "messages");
+
+            migrationBuilder.DropTable(
                 name: "receivers");
+
+            migrationBuilder.DropTable(
+                name: "registrations");
         }
     }
 }

@@ -1,6 +1,10 @@
-﻿using ChatApp.Data;
+﻿using ChatApp.Controller;
+using ChatApp.Data;
+using ChatApp.Helper;
 using ChatApp.Interface;
 using ChatApp.Model;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Validations;
 
 namespace ChatApp.Repositories
 {
@@ -12,24 +16,61 @@ namespace ChatApp.Repositories
         {
             _applicationDbContext = applicationDbContext;
         }
-        public ICollection<MessageInfo> ConversationHistory()
+        
+        public async Task<ICollection<MessageInfo>> GetMessages()
         {
-            throw new NotImplementedException();
+            var result = await _applicationDbContext.messages.ToListAsync();
+            return result;
         }
 
-        public void RemoveMessage(Guid msgId)
+        public async Task<MessageInfo> GetMessage(Guid id)
+        {
+
+            var result = await _applicationDbContext.messages.
+               Where(a => a.MsgId == id).FirstOrDefaultAsync();
+
+            return result;
+        }
+        public Task<ICollection<MessageInfo>>ConversationHistory()
         {
             throw new NotImplementedException();
         }
-        void IMessageInfo.AddMessage(MessageInfo messageInfo)
+        
+        public async Task<MessageInfo> AddMessage(MessageInfo messageInfo)
         {
-            _applicationDbContext.messages.Add(messageInfo);
-            _applicationDbContext.SaveChanges();
+            var result= await _applicationDbContext.messages.AddAsync(messageInfo);
+            await _applicationDbContext.SaveChangesAsync();
+            return result.Entity;
+        }
+        public async Task<MessageInfo> UpdateMessage( MessageInfo messageInfo)
+        {
+            var user = _applicationDbContext.messages.FirstOrDefault(a=> a.UserId==messageInfo.UserId);
+            if(user != null)
+            {
+                user.MsgId = messageInfo.MsgId;
+                user.UserId = messageInfo.UserId;
+                user.ReceiverId = messageInfo.ReceiverId;
+                user.MsgBody = messageInfo.MsgBody;
+                user.TimeStamp = messageInfo.TimeStamp;
+
+                await _applicationDbContext.SaveChangesAsync();
+                return user;
+            }
+            return null;
+
+        }
+        public async void RemoveMessage(Guid MsgId)
+        {
+            var result = await _applicationDbContext.messages.Where(a=>a.MsgId == MsgId).FirstOrDefaultAsync();
+            if (result != null)
+            {
+                _applicationDbContext.messages.Remove(result);
+                await _applicationDbContext.SaveChangesAsync();
+
+            }
+            await _applicationDbContext.SaveChangesAsync();
+
         }
 
-        void IMessageInfo.UpdateMessage(MessageInfo messageInfo)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

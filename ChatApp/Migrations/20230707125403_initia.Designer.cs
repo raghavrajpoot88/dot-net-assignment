@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230705124539_Initial")]
-    partial class Initial
+    [Migration("20230707125403_initia")]
+    partial class initia
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,7 +37,6 @@ namespace ChatApp.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Token")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("LoginId");
@@ -51,32 +50,27 @@ namespace ChatApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<string>("LoginId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<Guid>("LoginId1")
-                        .HasColumnType("char(36)");
-
                     b.Property<string>("MsgBody")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("ReceiverId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<Guid>("ReceiverId1")
+                    b.Property<Guid>("ReceiverId")
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime>("TimeStamp")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("registrationUserId")
+                        .HasColumnType("char(36)");
+
                     b.HasKey("MsgId");
 
-                    b.HasIndex("LoginId1");
+                    b.HasIndex("ReceiverId");
 
-                    b.HasIndex("ReceiverId1");
+                    b.HasIndex("registrationUserId");
 
                     b.ToTable("messages");
                 });
@@ -125,26 +119,21 @@ namespace ChatApp.Migrations
 
             modelBuilder.Entity("ChatApp.Model.MessageInfo", b =>
                 {
-                    b.HasOne("ChatApp.Model.Login", "login")
-                        .WithMany("MessageInfos")
-                        .HasForeignKey("LoginId1")
+                    b.HasOne("ChatApp.Models.ReceiverInfo", "Receiver")
+                        .WithMany("Messages")
+                        .HasForeignKey("ReceiverId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ChatApp.Models.ReceiverInfo", "Receiver")
-                        .WithMany("Messages")
-                        .HasForeignKey("ReceiverId1")
+                    b.HasOne("ChatApp.Model.Registration", "registration")
+                        .WithMany()
+                        .HasForeignKey("registrationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Receiver");
 
-                    b.Navigation("login");
-                });
-
-            modelBuilder.Entity("ChatApp.Model.Login", b =>
-                {
-                    b.Navigation("MessageInfos");
+                    b.Navigation("registration");
                 });
 
             modelBuilder.Entity("ChatApp.Models.ReceiverInfo", b =>
