@@ -31,16 +31,17 @@ namespace ChatApp.Repositories
 
             return result;
         }
-        public Task<ICollection<MessageInfo>>ConversationHistory()
+        public async Task<ICollection<MessageInfo>>GetConversationHistory()
         {
-            throw new NotImplementedException();
+            var MessageHistory=await _applicationDbContext.messages.OrderBy(u => u.UserId).ToListAsync();
+            return MessageHistory;
         }
         
-        public async Task<MessageInfo> AddMessage(MessageInfo messageInfo)
+        public async Task AddMessage(MessageInfo messageInfo)
         {
             var result= await _applicationDbContext.messages.AddAsync(messageInfo);
             await _applicationDbContext.SaveChangesAsync();
-            return result.Entity;
+            
         }
         public async Task<MessageInfo> UpdateMessage( MessageInfo messageInfo)
         {
@@ -59,7 +60,7 @@ namespace ChatApp.Repositories
             return null;
 
         }
-        public async void RemoveMessage(Guid MsgId)
+        public async Task RemoveMessage(Guid MsgId)
         {
             var result = await _applicationDbContext.messages.Where(a=>a.MsgId == MsgId).FirstOrDefaultAsync();
             if (result != null)

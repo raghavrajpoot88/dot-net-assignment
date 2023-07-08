@@ -58,6 +58,8 @@ namespace ChatApp.Controller
                     throw new Exception("Email Required");
                 if (string.IsNullOrEmpty(registered.Name) || registered.Name == "string")
                     throw new Exception("User name Required");
+                //if (string.IsNullOrEmpty(registered.Password) || registered.Password == "string")
+                //    throw new Exception("Password Required");
                 var CheckUserExists = (from user in _registration.GetUsers()
                                        where user.Email.Equals(registered.Email)
                                        select user).Count();
@@ -108,7 +110,7 @@ namespace ChatApp.Controller
             //loggedUser.Password=login.Password;
 
             //_login.AddUser(loggedUser);
-            string token = CreateToken(registeredUser);
+            string token = CreateToken(user);
             //loggedUser.Token = token;
             return Ok(token);
         }
@@ -119,6 +121,7 @@ namespace ChatApp.Controller
             {
                 claims.Add(new Claim(ClaimTypes.Email, user.Email));
             }
+            
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(

@@ -1,8 +1,12 @@
-﻿namespace ChatApp.Parameters
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ChatApp.Parameters
 {
     public class MessageAddPara
     {
-        public string Email { get; set; }
+        [Required]
+        public Guid ReceiverId { get; set; } = Guid.Empty;
+        [Required]
         public string Content { get; set; }
     }
 }

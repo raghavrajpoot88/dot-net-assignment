@@ -8,6 +8,6 @@ namespace ChatApp.Models
         [Key]
         public Guid ReceiverId { get; set; }
         public string Content { get; set; }
-        public ICollection<MessageInfo> Messages { get; set; }
+        //public ICollection<MessageInfo> Messages { get; set; }
     }
 }

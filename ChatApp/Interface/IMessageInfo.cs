@@ -6,9 +6,9 @@ namespace ChatApp.Interface
     {
         public Task<ICollection<MessageInfo>> GetMessages();
         Task<MessageInfo> GetMessage(Guid id); 
-        public Task<ICollection<MessageInfo>> ConversationHistory();
-        public Task<MessageInfo> AddMessage(MessageInfo messageInfo);
-        public void RemoveMessage(Guid MsgId);    
+        public Task<ICollection<MessageInfo>> GetConversationHistory();
+        public Task AddMessage(MessageInfo messageInfo);
+        public Task RemoveMessage(Guid MsgId);    
         public Task<MessageInfo> UpdateMessage(MessageInfo messageInfo);
 
 

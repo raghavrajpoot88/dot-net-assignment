@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230707125403_initia")]
-    partial class initia
+    [Migration("20230708100555_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -63,14 +63,7 @@ namespace ChatApp.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid>("registrationUserId")
-                        .HasColumnType("char(36)");
-
                     b.HasKey("MsgId");
-
-                    b.HasIndex("ReceiverId");
-
-                    b.HasIndex("registrationUserId");
 
                     b.ToTable("messages");
                 });
@@ -115,30 +108,6 @@ namespace ChatApp.Migrations
                     b.HasKey("ReceiverId");
 
                     b.ToTable("receivers");
-                });
-
-            modelBuilder.Entity("ChatApp.Model.MessageInfo", b =>
-                {
-                    b.HasOne("ChatApp.Models.ReceiverInfo", "Receiver")
-                        .WithMany("Messages")
-                        .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ChatApp.Model.Registration", "registration")
-                        .WithMany()
-                        .HasForeignKey("registrationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Receiver");
-
-                    b.Navigation("registration");
-                });
-
-            modelBuilder.Entity("ChatApp.Models.ReceiverInfo", b =>
-                {
-                    b.Navigation("Messages");
                 });
 #pragma warning restore 612, 618
         }

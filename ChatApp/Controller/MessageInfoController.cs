@@ -1,12 +1,18 @@
-﻿using ChatApp.Interface;
+﻿using ChatApp.Data;
+using ChatApp.Interface;
 using ChatApp.Model;
 using ChatApp.Parameters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualBasic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text;
 
 namespace ChatApp.Controller
 {
@@ -15,11 +21,23 @@ namespace ChatApp.Controller
     public class MessageInfoController : ControllerBase
     {
         private readonly IMessageInfo _messageInfo;
+        private readonly IConfiguration _configuration;
+        private readonly ApplicationDbContext _context;
 
-        public MessageInfoController(IMessageInfo messageInfo)
+        public MessageInfoController(IMessageInfo messageInfo, IConfiguration configuration,ApplicationDbContext applicationDbContext)
         {
             _messageInfo = messageInfo;
+            _configuration = configuration;
+            _context = applicationDbContext;
         }
+        [HttpGet]
+        [Authorize]
+        public async Task<ICollection<MessageInfo>> ConversationHistory()
+        {
+           return await _messageInfo.GetConversationHistory();
+
+        }
+
         [HttpPost]
         [Authorize]
         public async Task<ActionResult<MessageInfo>> AddMessaage(MessageAddPara messageInfo)
@@ -31,52 +49,54 @@ namespace ChatApp.Controller
                     return BadRequest(ModelState);
                 }
 
+                string currentUser = GetSenderIdFromToken();
+                var senderId=await _context.registrations.FirstOrDefaultAsync(u => u.Email == currentUser);
+
                 // Create a new message object
                 var message = new MessageInfo
                 {
                     MsgId = Guid.NewGuid(),
-                    //LoginId = GetSenderIdFromToken(),
-                    //ReceiverId = request.ReceiverId,
+                    UserId = senderId.UserId,
+                    ReceiverId = messageInfo.ReceiverId,
                     MsgBody = messageInfo.Content,
                     TimeStamp = DateTime.UtcNow
                 };
-
-                // TODO: Perform additional operations such as saving the message to the database
-
-                // Return the success response with the message details
-                //var response = new SendMessageResponse
-                //{
-                //    MessageId = message.MessageId,
-                //    SenderId = message.SenderId,
-                //    ReceiverId = message.ReceiverId,
-                //    Content = message.Content,
-                //    Timestamp = message.Timestamp
-                //};
-
-                return Ok(message);
-
-
+                 _context.messages.Add(message);
+                await _context.SaveChangesAsync();
+                //await _messageInfo.AddMessage(message);
+                var response = new MessageInfo
+                {
+                    MsgId = message.MsgId,
+                    UserId = message.UserId,
+                    ReceiverId = message.ReceiverId,
+                    MsgBody = message.MsgBody,
+                    TimeStamp = message.TimeStamp
+                };
+                return Ok(response);
             }
             catch (Exception ex)
             {
                 throw;
             }
-
-           
         }
-        [HttpPut]
-        [Authorize]
+        [HttpPut("{id}")]
+        //[Authorize]
         public async Task<ActionResult<MessageInfo>> UpdateMessage(Guid id,[FromBody]string content)
         {
             try
             {
-               
-                //if (id != messageInfo.MsgId)
+                var currentUser= GetSenderIdFromToken();
+                var SenderId= await _context.registrations.FirstOrDefaultAsync(u => u.Email == currentUser);
+                MessageInfo User = await _messageInfo.GetMessage(id);
+                //if ()
                 //{
                 //    return BadRequest("ID Mismatched");
                 //}
-                MessageInfo User = await _messageInfo.GetMessage(id);
-                if(User != null)
+                if (User.UserId != SenderId.UserId)
+                {
+                    return Unauthorized();
+                }
+                if(User == null|| id != User.MsgId)
                 {
                     return NotFound($"User Id={id} not found ");
                 }
@@ -90,21 +110,78 @@ namespace ChatApp.Controller
             }
             
         }
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<ActionResult> RemoveMsg(Guid id)
+        {
+            try
+            {
+                var currentUser= GetSenderIdFromToken();
+                var SenderId = await _context.registrations.FirstOrDefaultAsync(u => u.Email == currentUser);
+                MessageInfo User = await _messageInfo.GetMessage(id);
+                if (User.UserId != SenderId.UserId)
+                {
+                    return Unauthorized();
+                }
+                if (User == null || id != User.MsgId)
+                {
+                    return NotFound($"User Id={id} not found ");
+                }
+                
+                 await _messageInfo.RemoveMessage(id);
+                return Ok("Successfully Deleted");
 
-        private Guid GetSenderIdFromToken(AuthenticationHeaderValue authHeader)
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private string GetSenderIdFromToken()
         {
             // Extract the token from the authorization header
-            string token = authHeader.Parameter;
-            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-            JwtSecurityToken jwtToken = tokenHandler.ReadJwtToken(token);
+            //var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+            //var token = authHeader?.Replace("Bearer", " ");
 
-            // Extract the sender user ID from the claims
-            var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email);
-            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
+            //var tokenHandler = new JwtSecurityTokenHandler();
+
+            //var tokenValidationParameters = new TokenValidationParameters
+            //{
+            //    ValidateIssuer = false, // Set to true if you want to validate the token issuer
+            //    ValidateAudience = false, // Set to true if you want to validate the token audience
+            //    ValidateIssuerSigningKey = true, // Set to true if you want to validate the token signing key
+            //    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value)),
+            //    ValidateLifetime = true // Set to true if you want to validate the token expiration time
+                
+            //};
+            try
             {
-                return userId;
+                // Validate and decode the JWT token
+                var claimsPrincipal = HttpContext.User;
+                var userIdClaim = claimsPrincipal.FindFirst(ClaimTypes.Email);
+                var emailClaim = claimsPrincipal.FindFirst(ClaimTypes.Email);
+
+                return emailClaim?.Value;
+
+                //if (userIdClaim == null)
+                //{
+                //    throw new Exception("User Id not found in token.");
+                //}
+
+                //if (!Guid.TryParse(userIdClaim.Value, out Guid userId))
+                //{
+                //    throw new Exception("Invalid user Id in token.");
+                //}
+
+                //return userId;
             }
-            return Guid.Empty;
+            catch (SecurityTokenException ex)
+            {
+                // Handle token validation errors and exceptions according to your application's needs
+                throw new Exception(
+                    "Invalid token.", ex);
+            }
         }
 
     }

@@ -12,8 +12,8 @@ namespace ChatApp.Model
         public string MsgBody { get; set; }
         public DateTime TimeStamp { get; set; }
         //public Login login{ get; set; }
-        public Registration registration { get; set; }  
-        public ReceiverInfo Receiver { get; set;}
+        //public Registration registration { get; set; }  
+        //public ReceiverInfo Receiver { get; set;}
 
     }
 }
