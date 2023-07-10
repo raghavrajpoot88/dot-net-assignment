@@ -1,4 +1,5 @@
 ﻿using ChatApp.Data;
+using ChatApp.Helper;
 using ChatApp.Interface;
 using ChatApp.Model;
 using ChatApp.Parameters;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
@@ -32,10 +34,9 @@ namespace ChatApp.Controller
         }
         [HttpGet]
         [Authorize]
-        public async Task<ICollection<MessageInfo>> ConversationHistory()
+        public async Task<ICollection<MessageInfo>> ConversationHistory(Guid UserId, DateTime? before=null, int count=20,string sort="asc")
         {
-           return await _messageInfo.GetConversationHistory();
-
+            return await _messageInfo.GetConversationHistory(UserId);
         }
 
         [HttpPost]
@@ -80,7 +81,7 @@ namespace ChatApp.Controller
             }
         }
         [HttpPut("{id}")]
-        //[Authorize]
+        [Authorize]
         public async Task<ActionResult<MessageInfo>> UpdateMessage(Guid id,[FromBody]string content)
         {
             try

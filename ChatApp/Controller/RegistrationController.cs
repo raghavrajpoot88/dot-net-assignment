@@ -74,10 +74,7 @@ namespace ChatApp.Controller
                 registeredUser.PasswordHash = passwordHash;
                 registeredUser.PasswordSalt = passwordSalt;
 
-
                 _registration.AddUser(registeredUser);
-
-
             }
             catch (Exception ex)
             {

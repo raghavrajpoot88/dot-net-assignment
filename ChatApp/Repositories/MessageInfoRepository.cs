@@ -22,6 +22,15 @@ namespace ChatApp.Repositories
             var result = await _applicationDbContext.messages.ToListAsync();
             return result;
         }
+        public async Task<ICollection<MessageInfo>> GetUser(Guid UserId)
+            
+        {
+
+            var result =await _applicationDbContext.messages.
+               Where(a => a.UserId == UserId).ToListAsync();
+
+            return result;
+        }
 
         public async Task<MessageInfo> GetMessage(Guid id)
         {
@@ -31,9 +40,9 @@ namespace ChatApp.Repositories
 
             return result;
         }
-        public async Task<ICollection<MessageInfo>>GetConversationHistory()
+        public async Task<ICollection<MessageInfo>>GetConversationHistory(Guid UserId)
         {
-            var MessageHistory=await _applicationDbContext.messages.OrderBy(u => u.UserId).ToListAsync();
+            var MessageHistory=await _applicationDbContext.messages.Where(u => u.UserId==UserId).ToListAsync();
             return MessageHistory;
         }
         
