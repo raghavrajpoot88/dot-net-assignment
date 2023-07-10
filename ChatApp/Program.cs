@@ -1,10 +1,15 @@
+//using ChatApp;
+using ChatApp;
 using ChatApp.Data;
 using ChatApp.Interface;
 using ChatApp.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 
@@ -27,6 +32,8 @@ builder.Services.AddSwaggerGen(options =>
     });
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
+
+
 builder.Services.AddScoped<IRegistration ,RegistrationRepository>();
 builder.Services.AddScoped<IMessageInfo, MessageInfoRepository>();
 
@@ -42,6 +49,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience=false
         };
     });
+builder.Services.AddHttpLogging(httpLogging =>
+{
+    httpLogging.LoggingFields = HttpLoggingFields.All;
+});
+builder.Host.UseSerilog((hostingContext, LoggerConfig) =>
+{
+    LoggerConfig.ReadFrom.Configuration(hostingContext.Configuration);
+});
+
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -50,6 +66,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 var app = builder.Build();
+app.UseCustomMiddle();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -57,8 +74,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseHttpLogging();
 
 app.UseHttpsRedirection();
+app.UseSerilogRequestLogging();
 
 app.UseAuthentication();
 
