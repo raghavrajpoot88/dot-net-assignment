@@ -10,7 +10,9 @@ using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Context;
 using Swashbuckle.AspNetCore.Filters;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -66,7 +68,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 var app = builder.Build();
-app.UseCustomMiddle();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -84,5 +86,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseCustomMiddle();
 
 app.Run();

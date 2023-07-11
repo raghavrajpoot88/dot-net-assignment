@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using ChatApp.Helper;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ChatApp
@@ -18,9 +20,21 @@ namespace ChatApp
 
         public async Task Invoke(HttpContext httpContext)
         {
-            _logger.LogInformation("Custom Middleware Initiate");
+            //_logger.LogInformation("Custom Middleware Initiate");
+            var userEmail = httpContext.User;
+            var currentUser=userEmail.FindFirst(ClaimTypes.Email);
+            if (currentUser == null)
+            {
+                _logger.LogInformation(" Custom");
+            }
+            var userEmailDetail = currentUser?.Value;
+            _logger.LogInformation($"User Email: {userEmailDetail}");
 
             await _next(httpContext);
+        
+        
+        
+        
         }
     }
 
