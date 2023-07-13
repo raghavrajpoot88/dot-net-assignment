@@ -2,6 +2,7 @@
 using ChatApp.Interface;
 using ChatApp.Model;
 using ChatApp.ParameterModels;
+using ChatApp.Parameters;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -91,15 +92,15 @@ namespace ChatApp.Controller
             }
         }
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login (string Email,string Password)
+        public async Task<ActionResult<string>> Login (loginAddPara login)
         {
 
-            var user = await _dbcontext.registrations.FirstOrDefaultAsync(ul => ul.Email == Email);
-            if ( user== null||user.Email != Email)
+            var user = await _dbcontext.registrations.FirstOrDefaultAsync(ul => ul.Email == login.Email);
+            if ( user== null||user.Email != login.Email)
             {
                 return BadRequest("User is not Registered");
             }
-            if (!VerifyPass(Password, user.PasswordHash, user.PasswordSalt))
+            if (!VerifyPass(login.Password, user.PasswordHash, user.PasswordSalt))
             {
                 return BadRequest("Wrong Password.");
             }
@@ -109,7 +110,7 @@ namespace ChatApp.Controller
             //_login.AddUser(loggedUser);
             string token = CreateToken(user);
             //loggedUser.Token = token;
-            return Ok(token);
+            return Ok(new {token=token});
         }
         private string CreateToken(Registration user)
         {
