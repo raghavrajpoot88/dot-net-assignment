@@ -23,13 +23,11 @@ namespace ChatApp
             //_logger.LogInformation("Custom Middleware Initiate");
             var userEmail = httpContext.User;
             var currentUser=userEmail.FindFirst(ClaimTypes.Email);
-            if (currentUser == null)
-            {
-                _logger.LogInformation(" Custom");
-            }
             var userEmailDetail = currentUser?.Value;
-            _logger.LogInformation($"User Email: {userEmailDetail}");
+            _logger.LogInformation($"{userEmailDetail}");
 
+            
+            
             await _next(httpContext);
         
         

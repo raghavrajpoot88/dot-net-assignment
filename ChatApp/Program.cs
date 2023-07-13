@@ -66,6 +66,14 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 });
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+    policy =>
+    {
+        policy.AllowAnyHeader().WithOrigins("http://localhost:4200").AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -84,6 +92,8 @@ app.UseSerilogRequestLogging();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseCors();
 
 app.MapControllers();
 

@@ -42,7 +42,7 @@ namespace ChatApp.Repositories
         }
         public async Task<ICollection<MessageInfo>>GetConversationHistory(Guid UserId)
         {
-            var MessageHistory=await _applicationDbContext.messages.Where(u => u.UserId==UserId).ToListAsync();
+            var MessageHistory=await _applicationDbContext.messages.Where(u => u.UserId==UserId||u.ReceiverId==UserId).ToListAsync();
             return MessageHistory;
         }
         
