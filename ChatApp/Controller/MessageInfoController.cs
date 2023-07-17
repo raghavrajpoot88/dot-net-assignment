@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
+using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO.Compression;
 using System.Net.Http.Headers;
@@ -130,7 +131,7 @@ namespace ChatApp.Controller
                 }
                 
                  await _messageInfo.RemoveMessage(id);
-                return Ok("Successfully Deleted");
+                return Ok();
 
             }
             catch(Exception ex)

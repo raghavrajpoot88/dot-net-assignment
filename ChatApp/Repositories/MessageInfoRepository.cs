@@ -42,7 +42,7 @@ namespace ChatApp.Repositories
         }
         public async Task<ICollection<MessageInfo>>GetConversationHistory(Guid UserId)
         {
-            var MessageHistory=await _applicationDbContext.messages.Where(u => u.UserId==UserId||u.ReceiverId==UserId).ToListAsync();
+            var MessageHistory=await _applicationDbContext.messages.Where(u => u.ReceiverId==UserId).ToListAsync();
             return MessageHistory;
         }
         
@@ -54,7 +54,7 @@ namespace ChatApp.Repositories
         }
         public async Task<MessageInfo> UpdateMessage( MessageInfo messageInfo)
         {
-            var user = _applicationDbContext.messages.FirstOrDefault(a=> a.UserId==messageInfo.UserId);
+            var user = await _applicationDbContext.messages.FirstOrDefaultAsync(a=> a.MsgId==messageInfo.MsgId);
             if(user != null)
             {
                 user.MsgId = messageInfo.MsgId;
