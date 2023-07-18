@@ -37,7 +37,11 @@ namespace ChatApp.Controller
         [Authorize]
         public async Task<ICollection<MessageInfo>> ConversationHistory(Guid UserId, DateTime? before=null, int count=20,string sort="asc")
         {
-            return await _messageInfo.GetConversationHistory(UserId);
+            string currentUser = GetSenderIdFromToken();
+            var senderId = await _context.registrations.FirstOrDefaultAsync(u => u.Email == currentUser);
+            Guid userId = senderId.UserId;
+            
+            return await _messageInfo.GetConversationHistory(UserId,userId,before);
         }
 
         [HttpPost]
@@ -83,7 +87,7 @@ namespace ChatApp.Controller
         }
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<ActionResult<MessageInfo>> UpdateMessage(Guid id,[FromBody]string content)
+        public async Task<ActionResult<MessageInfo>> UpdateMessage(Guid id,updateMessage content)
         {
             try
             {
@@ -102,7 +106,8 @@ namespace ChatApp.Controller
                 {
                     return NotFound($"User Id={id} not found ");
                 }
-                User.MsgBody=content;
+                User.MsgBody=content.content;
+                User.TimeStamp=DateTime.UtcNow;
                 var UpdatedMsg = await _messageInfo.UpdateMessage(User);
                 return UpdatedMsg;
             }

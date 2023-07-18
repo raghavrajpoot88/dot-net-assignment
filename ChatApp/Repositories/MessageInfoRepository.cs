@@ -5,6 +5,7 @@ using ChatApp.Interface;
 using ChatApp.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Validations;
+using System.Reflection;
 
 namespace ChatApp.Repositories
 {
@@ -40,9 +41,12 @@ namespace ChatApp.Repositories
 
             return result;
         }
-        public async Task<ICollection<MessageInfo>>GetConversationHistory(Guid UserId)
+        public async Task<ICollection<MessageInfo>>GetConversationHistory(Guid UserId,Guid userId, DateTime? before)
         {
-            var MessageHistory=await _applicationDbContext.messages.Where(u => u.ReceiverId==UserId).ToListAsync();
+            var MessageHistory=await _applicationDbContext.messages.Where(u => (u.ReceiverId==UserId && u.UserId==userId
+                ||(u.UserId == UserId && u.ReceiverId == userId)) && (before == null || u.TimeStamp < before))
+                .OrderBy(m => m.TimeStamp).ToListAsync();
+
             return MessageHistory;
         }
         
