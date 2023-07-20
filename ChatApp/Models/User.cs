@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ChatApp.Model;
+using System.ComponentModel.DataAnnotations;
 
-namespace ChatApp.Model
+namespace ChatApp.Models
 {
-    public class Registration
+    public class User
     {
         [Key]
         public Guid UserId { get; set; }
@@ -10,5 +11,7 @@ namespace ChatApp.Model
         public string Name { get; set; }
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }
+
+        
     }
 }

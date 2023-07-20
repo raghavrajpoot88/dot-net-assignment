@@ -1,6 +1,6 @@
 ﻿using ChatApp.Data;
 using ChatApp.Interface;
-using ChatApp.Model;
+using ChatApp.Models;
 using ChatApp.ParameterModels;
 using ChatApp.Parameters;
 using Microsoft.AspNetCore.Identity;
@@ -18,12 +18,12 @@ namespace ChatApp.Controller
     [ApiController]
     public class RegistrationController : ControllerBase
     {
-        private readonly IRegistration _registration;
+        private readonly IUser _registration;
         private readonly IConfiguration _configuration;
         //private readonly ILogin _login;
         private readonly ApplicationDbContext _dbcontext;
 
-        public RegistrationController(IRegistration registration, IConfiguration configuration,
+        public RegistrationController(IUser registration, IConfiguration configuration,
                                         ApplicationDbContext applicationDbContext)
         {
             _registration = registration;
@@ -31,13 +31,13 @@ namespace ChatApp.Controller
             //_login = login;
             _dbcontext = applicationDbContext;
         }
-        public static Registration registeredUser = new Registration();
         //public static Login loggedUser = new Login();    
 
 
         [HttpGet]
         public IActionResult GetUsers()
         {
+            var loggedInUserId = User.FindFirst(ClaimTypes.Email)?.Value;
             var Users = _registration.GetUsers();
 
             return Ok(Users);
@@ -50,8 +50,9 @@ namespace ChatApp.Controller
             return Ok(User);
         }
         [HttpPost("register")]
-        public ActionResult<Registration> PostUser(UserAddPara registered)
+        public IActionResult PostUser(UserAddPara registered)
         {
+            var registeredUser = new User();
             try
             {
                 //Validations
@@ -68,6 +69,7 @@ namespace ChatApp.Controller
                 {
                     throw new Exception("User Already exist");
                 }
+                
                 CreatePasswordHash(registered.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
                 registeredUser.Email = registered.Email;
@@ -92,10 +94,10 @@ namespace ChatApp.Controller
             }
         }
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login (loginAddPara login)
+        public async Task<IActionResult> Login (loginAddPara login)
         {
 
-            var user = await _dbcontext.registrations.FirstOrDefaultAsync(ul => ul.Email == login.Email);
+            var user = await _dbcontext.users.FirstOrDefaultAsync(ul => ul.Email == login.Email);
             if ( user== null||user.Email != login.Email)
             {
                 return BadRequest("User is not Registered");
@@ -112,7 +114,7 @@ namespace ChatApp.Controller
             //loggedUser.Token = token;
             return Ok(new {token=token});
         }
-        private string CreateToken(Registration user)
+        private string CreateToken(User user)
         {
             List<Claim> claims = new List<Claim>();
             if (!string.IsNullOrEmpty(user.Email))

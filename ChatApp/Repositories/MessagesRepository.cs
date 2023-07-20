@@ -1,29 +1,26 @@
 ﻿using ChatApp.Controller;
 using ChatApp.Data;
-using ChatApp.Helper;
 using ChatApp.Interface;
 using ChatApp.Model;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Validations;
-using System.Reflection;
 
 namespace ChatApp.Repositories
 {
-    public class MessageInfoRepository : IMessageInfo
+    public class MessagesRepository : IMessages
     {
         private readonly ApplicationDbContext _applicationDbContext;
 
-        public MessageInfoRepository(ApplicationDbContext applicationDbContext)
+        public MessagesRepository(ApplicationDbContext applicationDbContext)
         {
             _applicationDbContext = applicationDbContext;
         }
         
-        public async Task<ICollection<MessageInfo>> GetMessages()
+        public async Task<ICollection<Messages>> GetMessage()
         {
             var result = await _applicationDbContext.messages.ToListAsync();
             return result;
         }
-        public async Task<ICollection<MessageInfo>> GetUser(Guid UserId)
+        public async Task<ICollection<Messages>> GetUser(Guid UserId)
             
         {
 
@@ -33,7 +30,7 @@ namespace ChatApp.Repositories
             return result;
         }
 
-        public async Task<MessageInfo> GetMessage(Guid id)
+        public async Task<Messages> GetMessageById(Guid id)
         {
 
             var result = await _applicationDbContext.messages.
@@ -41,22 +38,22 @@ namespace ChatApp.Repositories
 
             return result;
         }
-        public async Task<ICollection<MessageInfo>>GetConversationHistory(Guid UserId,Guid userId, DateTime? before)
+        public async Task<ICollection<Messages>>GetConversationHistory(Guid UserId,Guid senderId, DateTime? before)
         {
-            var MessageHistory=await _applicationDbContext.messages.Where(u => (u.ReceiverId==UserId && u.UserId==userId
-                ||(u.UserId == UserId && u.ReceiverId == userId)) && (before == null || u.TimeStamp < before))
+            var MessageHistory=await _applicationDbContext.messages.Where(u => (u.ReceiverId==UserId && u.UserId==senderId
+                ||(u.UserId == UserId && u.ReceiverId == senderId)) && (before == null || u.TimeStamp < before))
                 .OrderBy(m => m.TimeStamp).ToListAsync();
 
             return MessageHistory;
         }
         
-        public async Task AddMessage(MessageInfo messageInfo)
+        public async Task AddMessage(Messages messageInfo)
         {
             var result= await _applicationDbContext.messages.AddAsync(messageInfo);
             await _applicationDbContext.SaveChangesAsync();
             
         }
-        public async Task<MessageInfo> UpdateMessage( MessageInfo messageInfo)
+        public async Task<Messages> UpdateMessage( Messages messageInfo)
         {
             var user = await _applicationDbContext.messages.FirstOrDefaultAsync(a=> a.MsgId==messageInfo.MsgId);
             if(user != null)

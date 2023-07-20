@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ChatApp.Model
 {
-    public class MessageInfo
+    public class Messages
     {
         [Key]
         public Guid MsgId { get; set; }
@@ -11,9 +11,9 @@ namespace ChatApp.Model
         public Guid ReceiverId{ get; set; } //Foreign Key
         public string MsgBody { get; set; }
         public DateTime TimeStamp { get; set; }
-        //public Login login{ get; set; }
-        //public Registration registration { get; set; }  
-        //public ReceiverInfo Receiver { get; set;}
+        
+         
+        
 
     }
 }

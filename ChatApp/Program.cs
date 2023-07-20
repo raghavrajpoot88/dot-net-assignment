@@ -36,8 +36,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
-builder.Services.AddScoped<IRegistration ,RegistrationRepository>();
-builder.Services.AddScoped<IMessageInfo, MessageInfoRepository>();
+builder.Services.AddScoped<IUser ,UserRepository>();
+builder.Services.AddScoped<IMessages, MessagesRepository>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

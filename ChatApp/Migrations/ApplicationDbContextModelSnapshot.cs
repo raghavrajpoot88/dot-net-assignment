@@ -19,29 +19,7 @@ namespace ChatApp.Migrations
                 .HasAnnotation("ProductVersion", "7.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("ChatApp.Model.Login", b =>
-                {
-                    b.Property<Guid>("LoginId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Token")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("LoginId");
-
-                    b.ToTable("logins");
-                });
-
-            modelBuilder.Entity("ChatApp.Model.MessageInfo", b =>
+            modelBuilder.Entity("ChatApp.Model.Messages", b =>
                 {
                     b.Property<Guid>("MsgId")
                         .ValueGeneratedOnAdd()
@@ -62,10 +40,12 @@ namespace ChatApp.Migrations
 
                     b.HasKey("MsgId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("messages");
                 });
 
-            modelBuilder.Entity("ChatApp.Model.Registration", b =>
+            modelBuilder.Entity("ChatApp.Models.User", b =>
                 {
                     b.Property<Guid>("UserId")
                         .ValueGeneratedOnAdd()
@@ -89,22 +69,23 @@ namespace ChatApp.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("registrations");
+                    b.ToTable("users");
                 });
 
-            modelBuilder.Entity("ChatApp.Models.ReceiverInfo", b =>
+            modelBuilder.Entity("ChatApp.Model.Messages", b =>
                 {
-                    b.Property<Guid>("ReceiverId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                    b.HasOne("ChatApp.Models.User", "user")
+                        .WithMany("messages")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Navigation("user");
+                });
 
-                    b.HasKey("ReceiverId");
-
-                    b.ToTable("receivers");
+            modelBuilder.Entity("ChatApp.Models.User", b =>
+                {
+                    b.Navigation("messages");
                 });
 #pragma warning restore 612, 618
         }

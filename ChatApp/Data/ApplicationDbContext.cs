@@ -12,10 +12,9 @@ namespace ChatApp.Data
         {
 
         }
+        public DbSet<User> users { get; set; }
+        public DbSet<Messages> messages { get; set; }
 
-        public DbSet<Login> logins { get; set; }
-        public DbSet<MessageInfo> messages { get; set; }
-        public DbSet<ReceiverInfo> receivers { get; set; }
-        public DbSet<Registration> registrations { get; set; }
+        
     }
 }

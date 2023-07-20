@@ -1,21 +1,13 @@
 ﻿using ChatApp.Data;
-using ChatApp.Helper;
 using ChatApp.Interface;
 using ChatApp.Model;
 using ChatApp.Parameters;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.VisualBasic;
-using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
-using System.IO.Compression;
-using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Text;
 
 namespace ChatApp.Controller
 {
@@ -23,11 +15,11 @@ namespace ChatApp.Controller
     [ApiController]
     public class MessageInfoController : ControllerBase
     {
-        private readonly IMessageInfo _messageInfo;
+        private readonly IMessages _messageInfo;
         private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _context;
 
-        public MessageInfoController(IMessageInfo messageInfo, IConfiguration configuration,ApplicationDbContext applicationDbContext)
+        public MessageInfoController(IMessages messageInfo, IConfiguration configuration,ApplicationDbContext applicationDbContext)
         {
             _messageInfo = messageInfo;
             _configuration = configuration;
@@ -35,18 +27,19 @@ namespace ChatApp.Controller
         }
         [HttpGet]
         [Authorize]
-        public async Task<ICollection<MessageInfo>> ConversationHistory(Guid UserId, DateTime? before=null, int count=20,string sort="asc")
+        public async Task<IActionResult> ConversationHistory(Guid UserId, DateTime? before=null, int count=20,string sort="asc")
         {
             string currentUser = GetSenderIdFromToken();
-            var senderId = await _context.registrations.FirstOrDefaultAsync(u => u.Email == currentUser);
+            var senderId = await _context.users.FirstOrDefaultAsync(u => u.Email == currentUser);
             Guid userId = senderId.UserId;
             
-            return await _messageInfo.GetConversationHistory(UserId,userId,before);
+                var result= await _messageInfo.GetConversationHistory(UserId,userId,before);
+            return Ok(result);
         }
 
         [HttpPost]
         [Authorize]
-        public async Task<ActionResult<MessageInfo>> AddMessaage(MessageAddPara messageInfo)
+        public async Task<ActionResult<Messages>> AddMessaage(MessageAddPara messageInfo)
         {
             try
             {
@@ -56,10 +49,10 @@ namespace ChatApp.Controller
                 }
 
                 string currentUser = GetSenderIdFromToken();
-                var senderId=await _context.registrations.FirstOrDefaultAsync(u => u.Email == currentUser);
+                var senderId=await _context.users.FirstOrDefaultAsync(u => u.Email == currentUser);
 
                 // Create a new message object
-                var message = new MessageInfo
+                var message = new Messages
                 {
                     MsgId = Guid.NewGuid(),
                     UserId = senderId.UserId,
@@ -70,7 +63,7 @@ namespace ChatApp.Controller
                  _context.messages.Add(message);
                 await _context.SaveChangesAsync();
                 //await _messageInfo.AddMessage(message);
-                var response = new MessageInfo
+                var response = new Messages
                 {
                     MsgId = message.MsgId,
                     UserId = message.UserId,
@@ -87,13 +80,13 @@ namespace ChatApp.Controller
         }
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<ActionResult<MessageInfo>> UpdateMessage(Guid id,updateMessage content)
+        public async Task<ActionResult<Messages>> UpdateMessage(Guid id,updateMessage content)
         {
             try
             {
                 var currentUser= GetSenderIdFromToken();
-                var SenderId= await _context.registrations.FirstOrDefaultAsync(u => u.Email == currentUser);
-                MessageInfo User = await _messageInfo.GetMessage(id);
+                var SenderId= await _context.users.FirstOrDefaultAsync(u => u.Email == currentUser);
+                Messages User = await _messageInfo.GetMessageById(id);
                 //if ()
                 //{
                 //    return BadRequest("ID Mismatched");
@@ -124,8 +117,8 @@ namespace ChatApp.Controller
             try
             {
                 var currentUser= GetSenderIdFromToken();
-                var SenderId = await _context.registrations.FirstOrDefaultAsync(u => u.Email == currentUser);
-                MessageInfo User = await _messageInfo.GetMessage(id);
+                var SenderId = await _context.users.FirstOrDefaultAsync(u => u.Email == currentUser);
+                Messages User = await _messageInfo.GetMessageById(id);
                 if (User.UserId != SenderId.UserId)
                 {
                     return Unauthorized();
